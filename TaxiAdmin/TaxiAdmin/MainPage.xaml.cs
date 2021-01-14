@@ -55,7 +55,7 @@ namespace TaxiAdmin
                 Label = "d",
                 Position = (await geo.GetPositionsForAddressAsync("st. petersburg, budapestskaya 11")).First(),
                 Type = PinType.SearchResult
-            });*/
+            });
 
             DrawPolyline(polylineOrder,
                          map.Pins.Count != 0 ? new SimpleWaypoint() { Coordinate = new Coordinate(map.Pins.FirstOrDefault().Position.Latitude, map.Pins.FirstOrDefault().Position.Longitude) } :
@@ -102,9 +102,9 @@ namespace TaxiAdmin
             Geocoder geo = new Geocoder();
             foreach (var driver in drivers)
             {
-                if (map.Pins.Any(d => d != null && d.Label == driver.driverID.ToString()))
+                if (map.Pins.Any(d => d != null && d.Type==PinType.SavedPin && d.Label == driver.driverID.ToString()))
                 {
-                    Dispatcher.BeginInvokeOnMainThread(() => map.Pins.Where(d => d.Label == driver.driverID.ToString()).First().Position = new Position(driver.latitude ?? 0, driver.longitude ?? 0));
+                    Dispatcher.BeginInvokeOnMainThread(() => map.Pins.Where(d => d.Type == PinType.SavedPin && d.Label == driver.driverID.ToString()).First().Position = new Position(driver.latitude ?? 0, driver.longitude ?? 0));
                 }
                 else
                 {
@@ -116,11 +116,15 @@ namespace TaxiAdmin
                     }));
                 }
             }
+            foreach (var pin in map.Pins.Where(p => p !=null && p.Type == PinType.SavedPin))
+            {
+                if (!drivers.Select(d => d.driverID.ToString()).Contains(pin.Label)) Dispatcher.BeginInvokeOnMainThread(()=>map.Pins.Remove(pin));
+            }
             foreach (var order in orders)
             {
-                if (map.Pins.Any(d => d.Label == order.orderID.ToString()))
+                if (map.Pins.Any(d => d != null && d.Type == PinType.SearchResult && d.Label == order.orderID.ToString()))
                 {
-                    Dispatcher.BeginInvokeOnMainThread(() => map.Pins.Where(d => d.Label == order.orderID.ToString()).First().Position = new Position(order.latitudeFrom, order.longitudeFrom));
+                    Dispatcher.BeginInvokeOnMainThread(() => map.Pins.Where(d => d.Type == PinType.SearchResult && d.Label == order.orderID.ToString()).First().Position = new Position(order.latitudeFrom, order.longitudeFrom));
                 }
                 else
                 {
@@ -131,6 +135,10 @@ namespace TaxiAdmin
                         Type = PinType.SearchResult
                     }));
                 }
+            }
+            foreach (var pin in map.Pins.Where(p => p!=null && p.Type == PinType.SearchResult))
+            {
+                if (!orders.Select(d => d.orderID.ToString()).Contains(pin.Label)) Dispatcher.BeginInvokeOnMainThread(() => map.Pins.Remove(pin));
             }
             Dispatcher.BeginInvokeOnMainThread(() =>
             {
