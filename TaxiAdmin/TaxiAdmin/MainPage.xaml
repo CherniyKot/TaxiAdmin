@@ -1,0 +1,72 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://xamarin.com/schemas/2014/forms"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:maps="clr-namespace:Xamarin.Forms.Maps;assembly=Xamarin.Forms.Maps"
+             x:Class="TaxiAdmin.MainPage">
+
+    <StackLayout Orientation="Horizontal">
+        <Frame WidthRequest="750">
+            <maps:Map x:Name="map" >
+                <x:Arguments>
+                    <maps:MapSpan>
+                        <x:Arguments>
+                            <maps:Position>
+                                <x:Arguments>
+                                    <x:Double>59.923352</x:Double>
+                                    <x:Double>30.328699</x:Double>
+                                </x:Arguments>
+                            </maps:Position>
+                            <x:Double>0.8</x:Double>
+                            <x:Double>0.8</x:Double>
+                        </x:Arguments>
+                    </maps:MapSpan>
+                </x:Arguments>
+                <maps:Map.MapElements>
+                    <maps:Polyline x:Name="polylineOrder" StrokeColor="Red" StrokeWidth="12">
+                        <maps:Polyline.Geopath>
+                        </maps:Polyline.Geopath>
+                    </maps:Polyline>
+                    <maps:Polyline x:Name="polylineDriver" StrokeColor="Blue" StrokeWidth="12">
+                        <maps:Polyline.Geopath>
+                        </maps:Polyline.Geopath>
+                    </maps:Polyline>
+                </maps:Map.MapElements>
+            </maps:Map>
+        </Frame>
+        <StackLayout>
+            <Frame WidthRequest="200">
+                <StackLayout>
+                    <Label Text="Select Driver"/>
+                    <Picker x:Name="driverPicker">
+                        <Picker.Items>
+                            <x:String>Driver1</x:String>
+                            <x:String>Driver2</x:String>
+                        </Picker.Items>
+                    </Picker>
+                    <Label Text="Select Client"/>
+                    <Picker x:Name="ClientPicker">
+                        <Picker.Items>
+                            <x:String>Client1</x:String>
+                            <x:String>Client2</x:String>
+                        </Picker.Items>
+                    </Picker>
+                    <Button Text="Commit"/>
+                </StackLayout>
+            </Frame>
+            <Frame WidthRequest="200">
+                <StackLayout>
+                    <Label Text="Select Drive"/>
+                    <Picker x:Name="drivePicker">
+                        <Picker.Items>
+                            <x:String>Drive1</x:String>
+                            <x:String>Drive2</x:String>
+                        </Picker.Items>
+                    </Picker>
+                    <Button Text="Reject"/>
+                </StackLayout>
+            </Frame>
+        </StackLayout>
+        
+    </StackLayout>
+
+</ContentPage>
