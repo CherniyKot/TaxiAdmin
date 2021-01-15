@@ -16,54 +16,24 @@ namespace TaxiAdmin
     public partial class MainPage : ContentPage
     {
         Timer RP;
+        int OrderID;
+        int DriverID;
+        DriverLocation[] drivers;
+        OrderLocation[] orders;
+        DriverLocation driver;
+        OrderLocation order;
+        double UserPathLength;
+        double UserPathPrice;
         public MainPage()
         {
             InitializeComponent();
-
-            CreateMap();
 
             RefreshPositions(null, null);
             RP = new Timer(1000);
             RP.Elapsed += RefreshPositions;
             RP.Start();
         }
-        public async void CreateMap()
-        {
-            Geocoder geo = new Geocoder();
-            var rus = await geo.GetPositionsForAddressAsync("St. Petersburg");
-
-            /*map.Pins.Add(new Pin()
-            {
-                Label = "a",
-                Position = (await geo.GetPositionsForAddressAsync("st. petersburg, budapestskaya 8")).First(),
-                Type = PinType.Generic
-            });
-            map.Pins.Add(new Pin()
-            {
-                Label = "b",
-                Position = (await geo.GetPositionsForAddressAsync("st. petersburg, budapestskaya 9")).First(),
-                Type = PinType.Place
-            });
-            map.Pins.Add(new Pin()
-            {
-                Label = "c",
-                Position = (await geo.GetPositionsForAddressAsync("st. petersburg, budapestskaya 10")).First(),
-                Type = PinType.SavedPin
-            });
-            map.Pins.Add(new Pin()
-            {
-                Label = "d",
-                Position = (await geo.GetPositionsForAddressAsync("st. petersburg, budapestskaya 11")).First(),
-                Type = PinType.SearchResult
-            });
-
-            DrawPolyline(polylineOrder,
-                         map.Pins.Count != 0 ? new SimpleWaypoint() { Coordinate = new Coordinate(map.Pins.FirstOrDefault().Position.Latitude, map.Pins.FirstOrDefault().Position.Longitude) } :
-                         new SimpleWaypoint() { Address = "St.Petersburg" },
-                         new SimpleWaypoint() { Address = "St. petersburg, hermitage" });*/
-
-        }
-        public async void DrawPolyline(Polyline polyline, SimpleWaypoint from, SimpleWaypoint to)
+        public async Task<double> DrawPolyline(Polyline polyline, SimpleWaypoint from, SimpleWaypoint to)
         {
             polyline.Geopath.Clear();
             RouteRequest request = new RouteRequest()
@@ -91,14 +61,16 @@ namespace TaxiAdmin
                 {
                     polyline.Geopath.Add(pos);
                 }
-            else DisplayAlert("Routing error", string.Concat(response.ErrorDetails), "Ok");
+            else DisplayAlert("Routing error", string.Concat(response.ErrorDetails??new[]{ "Unknown error occured",""}), "Ok");
+
+            return response.ResourceSets.First().Resources.OfType<Route>().First().TravelDistance;
         }
 
         public void RefreshPositions(object sender, ElapsedEventArgs e)
         {
             RP?.Stop();
-            var drivers = Server.GetDriversLocations();
-            var orders = Server.GetOrders();
+            drivers = Server.GetDriversLocations();
+            orders = Server.GetOrders();
             Geocoder geo = new Geocoder();
             foreach (var driver in drivers)
             {
@@ -108,12 +80,16 @@ namespace TaxiAdmin
                 }
                 else
                 {
-                    Dispatcher.BeginInvokeOnMainThread(() => map.Pins.Add(new Pin()
-                    {
-                        Position = new Position(driver.latitude ?? 0, driver.longitude ?? 0),
-                        Label = driver.driverID.ToString(),
-                        Type = PinType.SavedPin
-                    }));
+                    Dispatcher.BeginInvokeOnMainThread(() => {
+                        var pin = new Pin()
+                        {
+                            Position = new Position(driver.latitude ?? 0, driver.longitude ?? 0),
+                            Label = driver.driverID.ToString(),
+                            Type = PinType.SavedPin
+                        };
+                        map.Pins.Add(pin);
+                        pin.MarkerClicked += Pin_MarkerClicked;
+                    });
                 }
             }
             foreach (var pin in map.Pins.Where(p => p !=null && p.Type == PinType.SavedPin))
@@ -128,12 +104,16 @@ namespace TaxiAdmin
                 }
                 else
                 {
-                    Dispatcher.BeginInvokeOnMainThread(() => map.Pins.Add(new Pin()
-                    {
-                        Position = new Position(order.latitudeFrom, order.longitudeFrom),
-                        Label = order.orderID.ToString(),
-                        Type = PinType.SearchResult
-                    }));
+                    Dispatcher.BeginInvokeOnMainThread(() => {
+                        var pin= new Pin()
+                        {
+                            Position = new Position(order.latitudeFrom, order.longitudeFrom),
+                            Label = order.orderID.ToString(),
+                            Type = PinType.SearchResult
+                        };
+                        map.Pins.Add(pin);
+                        pin.MarkerClicked += Pin_MarkerClicked;
+                    });
                 }
             }
             foreach (var pin in map.Pins.Where(p => p!=null && p.Type == PinType.SearchResult))
@@ -148,6 +128,59 @@ namespace TaxiAdmin
                 }
             });
             RP?.Start();
+        }
+
+        private async void Pin_MarkerClicked(object sender, PinClickedEventArgs e)
+        {
+            var pin = sender as Pin;
+            if (pin.Type==PinType.SavedPin)
+            {
+                var nDriverID = int.Parse(pin.Label);
+                if (DriverID == nDriverID)
+                {
+                    nDriverID = 0;
+                    polylineDriver.Geopath.Clear();
+                    chosenDriver.Text = "";
+                }
+                else
+                {
+                    DriverID = nDriverID;
+                    driver = drivers.Where(d => d.driverID == DriverID).First();
+                    chosenDriver.Text = $"{driver.longitude} {driver.latitude}";
+                }
+            }
+            else if(pin.Type==PinType.SearchResult)
+            {
+                var nOrderID = int.Parse(pin.Label);
+                if (OrderID == nOrderID)
+                {
+                    OrderID = 0;
+                    polylineOrder.Geopath.Clear();
+                    polylineDriver.Geopath.Clear();
+                    chosenUser.Text = "";
+                    UserPathLength = 0;
+                    CalculatePrice(null, null);
+                }
+                else
+                {
+                    OrderID = nOrderID;
+                    order = orders.Where(o => o.orderID == OrderID).First();
+                    chosenUser.Text = $"{order.longitudeFrom} {order.latitudeFrom} - {order.longitudeTo} {order.latitudeTo} ";
+
+                    UserPathLength = await DrawPolyline(polylineOrder, new SimpleWaypoint(order.latitudeFrom, order.longitudeFrom), new SimpleWaypoint(order.latitudeTo, order.longitudeTo));
+                    CalculatePrice(null, null);
+                }
+            }
+            if (OrderID == 0 || DriverID == 0) return;
+            DrawPolyline(polylineDriver, new SimpleWaypoint(driver.latitude.GetValueOrDefault(), driver.longitude.GetValueOrDefault()), new SimpleWaypoint(order.latitudeFrom, order.longitudeFrom));
+        }
+
+        private void CalculatePrice(object sender, ValueChangedEventArgs e)
+        {
+            var price = KmPrice.Value;
+            UserPathPrice = (price * UserPathLength);
+            TotalPrice.Text = UserPathPrice.ToString("N2");
+            distance.Text = UserPathLength.ToString("N1");
         }
     }
 

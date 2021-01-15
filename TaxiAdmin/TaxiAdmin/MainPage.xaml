@@ -2,11 +2,12 @@
 <ContentPage xmlns="http://xamarin.com/schemas/2014/forms"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:maps="clr-namespace:Xamarin.Forms.Maps;assembly=Xamarin.Forms.Maps"
+             xmlns:local="clr-namespace:TaxiAdmin;assembly=TaxiAdmin"
              x:Class="TaxiAdmin.MainPage">
 
     <StackLayout Orientation="Horizontal">
         <Frame WidthRequest="750">
-            <maps:Map x:Name="map" >
+            <local:CustomMap x:Name="map" >
                 <x:Arguments>
                     <maps:MapSpan>
                         <x:Arguments>
@@ -31,40 +32,44 @@
                         </maps:Polyline.Geopath>
                     </maps:Polyline>
                 </maps:Map.MapElements>
-            </maps:Map>
+            </local:CustomMap>
         </Frame>
         <StackLayout>
+            <Label Text="Distance:"/>
+            <StackLayout Orientation="Horizontal">
+                <Label x:Name="distance" Text="0"/>
+                <Label Text="km"/>
+            </StackLayout>
+            <StackLayout Orientation="Horizontal">
+                <Label Text="{Binding Source={x:Reference KmPrice},
+                              Path=Value,
+                              StringFormat='Price of 1 km: {0:F2} Rub'}"/>
+            </StackLayout>
+            <Slider x:Name="KmPrice" Minimum="0.1" Maximum="30" Value="15"  WidthRequest="150" ValueChanged="CalculatePrice"/>
             <Frame WidthRequest="200">
                 <StackLayout>
                     <Label Text="Select Driver"/>
-                    <Picker x:Name="driverPicker">
-                        <Picker.Items>
-                            <x:String>Driver1</x:String>
-                            <x:String>Driver2</x:String>
-                        </Picker.Items>
-                    </Picker>
+                    <Frame>
+                        <Label x:Name="chosenDriver"/>
+                    </Frame>
                     <Label Text="Select Client"/>
-                    <Picker x:Name="ClientPicker">
-                        <Picker.Items>
-                            <x:String>Client1</x:String>
-                            <x:String>Client2</x:String>
-                        </Picker.Items>
-                    </Picker>
-                    <Button Text="Commit"/>
+                    <Frame>
+                        <Label x:Name="chosenUser"/>
+                    </Frame>
+                    <Button Text="Connect"/>
+                    <Label Text="Total price:"/>
+                    <Label x:Name="TotalPrice" Text="0"/>
                 </StackLayout>
             </Frame>
-            <Frame WidthRequest="200">
+            <!--Frame WidthRequest="200">
                 <StackLayout>
-                    <Label Text="Select Drive"/>
-                    <Picker x:Name="drivePicker">
-                        <Picker.Items>
-                            <x:String>Drive1</x:String>
-                            <x:String>Drive2</x:String>
-                        </Picker.Items>
-                    </Picker>
+                    <Label Text="Select User"/>
+                    <Frame>
+                        <Label x:Name="chosenUser"/>
+                    </Frame>
                     <Button Text="Reject"/>
                 </StackLayout>
-            </Frame>
+            </-->
         </StackLayout>
         
     </StackLayout>
