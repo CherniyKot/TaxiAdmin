@@ -3,16 +3,19 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Net;
+using System.Net.Http;
 using System.Text;
+using System.Threading.Tasks;
 
 namespace TaxiAdmin
 {
     public static class Server
     {
+        private static readonly HttpClient client = new HttpClient();
         public static DriverLocation[] GetDriversLocations()
         {
             ServicePointManager.ServerCertificateValidationCallback += (o, c, ch, er) => true;
-            var request = WebRequest.Create("https://localhost:44368/Api/DriverLocations");
+            var request = WebRequest.Create("https://localhost:44368/Api/FreeDriversLocations");
             WebResponse response;
             try
             {
@@ -69,6 +72,20 @@ namespace TaxiAdmin
                 }
             }
             return result;
+        }
+
+        public static async Task<bool> Connect(int orderId, int driverId)
+        {
+            ServicePointManager.ServerCertificateValidationCallback += (o, c, ch, er) => true;
+            var values = new Dictionary<string, string>
+            {
+                { "orderId", orderId.ToString() },
+                { "driverId", driverId.ToString() }
+            };
+
+            var content = new FormUrlEncodedContent(values);
+            var response = await client.PostAsync("https://localhost:44368/Api/Connect", content);
+            return response.IsSuccessStatusCode;
         }
     }
 

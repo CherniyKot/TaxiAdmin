@@ -37,7 +37,7 @@
         <StackLayout>
             <Label Text="Distance:"/>
             <StackLayout Orientation="Horizontal">
-                <Label x:Name="distance" Text="0"/>
+                <Label x:Name="distance" Text="0.0"/>
                 <Label Text="km"/>
             </StackLayout>
             <StackLayout Orientation="Horizontal">
@@ -56,20 +56,11 @@
                     <Frame>
                         <Label x:Name="chosenUser"/>
                     </Frame>
-                    <Button Text="Connect"/>
+                    <Button Text="Connect" Clicked="Button_Clicked"/>
                     <Label Text="Total price:"/>
-                    <Label x:Name="TotalPrice" Text="0"/>
+                    <Label x:Name="TotalPrice" Text="0.00"/>
                 </StackLayout>
             </Frame>
-            <!--Frame WidthRequest="200">
-                <StackLayout>
-                    <Label Text="Select User"/>
-                    <Frame>
-                        <Label x:Name="chosenUser"/>
-                    </Frame>
-                    <Button Text="Reject"/>
-                </StackLayout>
-            </-->
         </StackLayout>
         
     </StackLayout>

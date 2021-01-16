@@ -182,6 +182,17 @@ namespace TaxiAdmin
             TotalPrice.Text = UserPathPrice.ToString("N2");
             distance.Text = UserPathLength.ToString("N1");
         }
+
+        private void Button_Clicked(object sender, EventArgs e)
+        {
+            Server.Connect(OrderID, DriverID);
+            OrderID = 0;
+            DriverID = 0;
+            polylineDriver.Geopath.Clear();
+            polylineOrder.Geopath.Clear();
+            chosenDriver.Text = "";
+            chosenUser.Text = "";
+        }
     }
 
 
