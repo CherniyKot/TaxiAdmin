@@ -56,7 +56,7 @@
                     <Frame>
                         <Label x:Name="chosenUser"/>
                     </Frame>
-                    <Button Text="Connect" Clicked="Button_Clicked"/>
+                    <Button Text="Connect" Clicked="Connect"/>
                     <Label Text="Total price:"/>
                     <Label x:Name="TotalPrice" Text="0.00"/>
                 </StackLayout>

@@ -92,10 +92,13 @@ namespace TaxiAdmin
                     });
                 }
             }
-            foreach (var pin in map.Pins.Where(p => p !=null && p.Type == PinType.SavedPin))
+            Dispatcher.BeginInvokeOnMainThread(() =>
             {
-                if (!drivers.Select(d => d.driverID.ToString()).Contains(pin.Label)) Dispatcher.BeginInvokeOnMainThread(()=>map.Pins.Remove(pin));
-            }
+                foreach (var pin in map.Pins.Where(p => p != null && p.Type == PinType.SavedPin))
+                {
+                    if (!drivers.Select(d => d.driverID.ToString()).Contains(pin.Label)) Dispatcher.BeginInvokeOnMainThread(() => map.Pins.Remove(pin));
+                }
+            });
             foreach (var order in orders)
             {
                 if (map.Pins.Any(d => d != null && d.Type == PinType.SearchResult && d.Label == order.orderID.ToString()))
@@ -138,7 +141,7 @@ namespace TaxiAdmin
                 var nDriverID = int.Parse(pin.Label);
                 if (DriverID == nDriverID)
                 {
-                    nDriverID = 0;
+                    DriverID = 0;
                     polylineDriver.Geopath.Clear();
                     chosenDriver.Text = "";
                 }
@@ -183,9 +186,9 @@ namespace TaxiAdmin
             distance.Text = UserPathLength.ToString("N1");
         }
 
-        private void Button_Clicked(object sender, EventArgs e)
+        private void Connect(object sender, EventArgs e)
         {
-            Server.Connect(OrderID, DriverID);
+            Server.Connect(OrderID, DriverID, KmPrice.Value * UserPathLength);
             OrderID = 0;
             DriverID = 0;
             polylineDriver.Geopath.Clear();

@@ -74,13 +74,14 @@ namespace TaxiAdmin
             return result;
         }
 
-        public static async Task<bool> Connect(int orderId, int driverId)
+        public static async Task<bool> Connect(int orderId, int driverId, double cost)
         {
             ServicePointManager.ServerCertificateValidationCallback += (o, c, ch, er) => true;
             var values = new Dictionary<string, string>
             {
                 { "orderId", orderId.ToString() },
-                { "driverId", driverId.ToString() }
+                { "driverId", driverId.ToString() },
+                { "cost", cost.ToString().Replace('.',',') }
             };
 
             var content = new FormUrlEncodedContent(values);
